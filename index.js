@@ -53,12 +53,19 @@ async function run() {
     //   res.send(products);
     // });
 
-    // // Get categories data id wise
+    // Get categories data id wise
     app.get("/products/:Category_id", async (req, res) => {
       const CategoryId = req.params.Category_id;
       const query = { Category_id: CategoryId };
       const products = await categoriesProductsCollection.find(query).toArray();
       res.send(products);
+    });
+
+    // Post orders Data
+    app.post("/orders", async (req, res) => {
+      const order = req.body;
+      const result = await ordersCollection.insertOne(order);
+      res.send(result);
     });
   } finally {
   }
