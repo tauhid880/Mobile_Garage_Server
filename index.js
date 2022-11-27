@@ -67,6 +67,14 @@ async function run() {
       const result = await ordersCollection.insertOne(order);
       res.send(result);
     });
+    // Get orders data
+    app.get("/orders", async (req, res) => {
+      const email = req.query.email;
+      console.log(email);
+      const query = { customer_email: email };
+      const orders = await ordersCollection.find(query).toArray();
+      res.send(orders);
+    });
   } finally {
   }
 }
