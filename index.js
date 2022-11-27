@@ -75,6 +75,12 @@ async function run() {
       const orders = await ordersCollection.find(query).toArray();
       res.send(orders);
     });
+    // Store Users data in data base
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
   } finally {
   }
 }
