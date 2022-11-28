@@ -18,6 +18,23 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+// JWT verify middleware
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    res.status(401).send("Unauthorized Access");
+  }
+  const token = authHeader.split(" ")[1];
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden Access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
+
 // MongoDB operation
 async function run() {
   try {
@@ -46,13 +63,6 @@ async function run() {
       res.send(categories);
     });
 
-    // app.get("/products/:id", async (req, res) => {
-    //   const category = req.params.category;
-    //   const query = { Categories_Name: category };
-    //   const products = categoriesProductsCollection.find(query).toArray();
-    //   res.send(products);
-    // });
-
     // Get categories data id wise
     app.get("/products/:Category_id", async (req, res) => {
       const CategoryId = req.params.Category_id;
@@ -68,10 +78,13 @@ async function run() {
       res.send(result);
     });
     // Get orders data
-    app.get("/orders", async (req, res) => {
+    app.get("/orders", verifyJWT, async (req, res) => {
       const email = req.query.email;
-      console.log(email);
-      const query = { customer_email: email };
+      const decodedEmail = req.decoded.email;
+      if (email !== decodedEmail) {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+      const query = { email: email };
       const orders = await ordersCollection.find(query).toArray();
       res.send(orders);
     });
@@ -80,6 +93,28 @@ async function run() {
       const user = req.body;
       const result = await usersCollection.insertOne(user);
       res.send(result);
+    });
+
+    // Get User based On Role
+    app.get("/users/:role", async (req, res) => {
+      const role = req.params.role;
+      const query = { role: role };
+      const users = await usersCollection.find(query).toArray();
+      res.send(users);
+    });
+
+    // JWT token
+    app.get("/jwt", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      if (user) {
+        const token = jwt.sign({ email }, process.env.ACCESS_TOKEN_SECRET, {
+          expiresIn: "3h",
+        });
+        return res.send({ accessToken: token });
+      }
+      res.status(403).send({ accessToken: "" });
     });
   } finally {
   }
