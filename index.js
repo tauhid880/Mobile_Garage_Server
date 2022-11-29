@@ -100,7 +100,12 @@ async function run() {
       const orders = await ordersCollection.find(query).toArray();
       res.send(orders);
     });
-
+    // Store Users data in data base
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
     // Get User based On Role
     app.get("/users/:role", async (req, res) => {
       const role = req.params.role;
