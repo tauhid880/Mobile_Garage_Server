@@ -77,7 +77,12 @@ async function run() {
       const products = await categoriesProductsCollection.find(query).toArray();
       res.send(products);
     });
-
+    // Post product Data
+    app.post("/products", async (req, res) => {
+      const product = req.body;
+      const result = await categoriesProductsCollection.insertOne(product);
+      res.send(result);
+    });
     // Post orders Data
     app.post("/orders", async (req, res) => {
       const order = req.body;
