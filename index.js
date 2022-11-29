@@ -71,6 +71,13 @@ async function run() {
       res.send(products);
     });
 
+    // Get Products Data
+    app.get("/products", async (req, res) => {
+      const query = {};
+      const products = await categoriesProductsCollection.find(query).toArray();
+      res.send(products);
+    });
+
     // Post orders Data
     app.post("/orders", async (req, res) => {
       const order = req.body;
