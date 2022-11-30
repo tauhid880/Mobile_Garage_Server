@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 require("dotenv").config();
 const port = process.env.PORT || 5000;
@@ -113,7 +113,12 @@ async function run() {
       const users = await usersCollection.find(query).toArray();
       res.send(users);
     });
-
+    // Get User data
+    app.get("/users", async (req, res) => {
+      const query = {};
+      const users = await usersCollection.find(query).toArray();
+      res.send(users);
+    });
     // JWT token
     app.get("/jwt", async (req, res) => {
       const email = req.query.email;
@@ -126,6 +131,30 @@ async function run() {
         return res.send({ accessToken: token });
       }
       res.status(403).send({ accessToken: "" });
+    });
+
+    // Admin Api
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      res.send({ isAdmin: user?.role === "Admin" });
+    });
+    // Seller Api
+    app.get("/users/seller/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      res.send({ isSeller: user?.role === "Seller" });
+    });
+    // Buyer Api
+
+    // Seller Api
+    app.get("/users/buyer/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      res.send({ isSeller: user?.role === "Buyer" });
     });
   } finally {
   }
